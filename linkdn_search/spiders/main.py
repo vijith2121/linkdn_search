@@ -45,6 +45,7 @@ class Linkdn_searchSpider(scrapy.Spider):
         df = pd.read_csv(file_path)
         for item in df.to_dict('records'):
             search_name = item.get('nameen', '')
+            # search_name = 'HATEM ABDELWAHAB ELSAYED AWADALLA'
             headers['referer'] = f'https://www.linkedin.com/search/results/all/?keywords={search_name}&origin=TYPEAHEAD_ESCAPE_HATCH&sid=w2Q'
             yield scrapy.Request(
                 f'https://www.linkedin.com/voyager/api/graphql?variables=(start:0,origin:SWITCH_SEARCH_VERTICAL,query:(keywords:{search_name},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(PEOPLE))),includeFiltersInResponse:false))&queryId=voyagerSearchDashClusters.9c3177ca40ed191b452e1074f52445a8',
@@ -53,12 +54,6 @@ class Linkdn_searchSpider(scrapy.Spider):
                 callback=self.parse_profile
             )
             # return
-        # for item in response.json().get('included', []):
-        #     print(item.get('navigationUrl'))
-
-        # data = items.json().get('data', {}).get('included', [])
-        # for i in data:
-        #     print(i)
 
     def parse_profile(self, response):
         profile_urls = response.json().get('included', [])
@@ -69,6 +64,21 @@ class Linkdn_searchSpider(scrapy.Spider):
         for profile_url in profile_urls:
             # print(profile_url.get('navigationUrl'))
             if profile_url.get('navigationUrl') != None:
+                profile_pictures_url = profile_url.get(
+                    'image', {}
+                    ).get(
+                        'attributes', []
+                        )[0].get(
+                            'detailData', {}
+                            ).get(
+                                'nonEntityProfilePicture', {}
+                                ).get(
+                                    'vectorImage', {}
+                                    ).get(
+                                        'artifacts', []
+                                        )[0].get(
+                                            'fileIdentifyingUrlPathSegment', ''
+                                            )
                 url = profile_url.get('navigationUrl')
                 profile_url_slug = url.split('/')[-1].split('?')[0]
                 # return
@@ -96,7 +106,8 @@ class Linkdn_searchSpider(scrapy.Spider):
                     'profile_url': url,
                     'profile_url_slug': profile_url_slug,
                     'cookies': cookies,
-                    'headers': headers
+                    'headers': headers,
+                    'profile_pictures_url': profile_pictures_url
                 }
                 yield scrapy.Request(
                     url=url, callback=self.parse_detail_page, cookies=cookies, headers=headers, meta=meta
@@ -204,10 +215,10 @@ class Linkdn_searchSpider(scrapy.Spider):
             'about': meta_data.get('about', None),
             'Causes': meta_data.get('Causes', None),
             'show_more_profile': show_more_profile_get,
-            'scrape_date': str(scrape_date)
+            'scrape_date': str(scrape_date),
+            'profile_pictures_url': meta_data.get('profile_pictures_url', None)
         }
         yield LinkdnItem(**data)
-
 
 def get_about(data):
     about_list = []
@@ -217,7 +228,6 @@ def get_about(data):
                 item.get('components', {}).get('textComponent').get('text').get('text').strip()
             )
     return "".join(about_list).strip() if about_list else None
-
 
 def show_more_profile_get_items(show_more_profile_items):
     item_lists = []
