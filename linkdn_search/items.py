@@ -11,3 +11,4 @@ class LinkdnItem(scrapy.Item):
     about = scrapy.Field()
     Causes = scrapy.Field()
     show_more_profile = scrapy.Field()
+    scrape_date = scrapy.Field()

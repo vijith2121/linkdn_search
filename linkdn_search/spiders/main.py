@@ -5,6 +5,8 @@ import pandas as pd
 from curl_cffi import requests
 from lxml import html
 import json
+from datetime import timedelta
+from datetime import date
 
 class Linkdn_searchSpider(scrapy.Spider):
     name = "linkdn_search"
@@ -189,6 +191,8 @@ class Linkdn_searchSpider(scrapy.Spider):
                     if causes and causes == 'Causes':
                         Causes = get_about(item.get('topComponents', []))
                         meta_data['Causes'] = Causes
+
+        scrape_date = date.today()
         data = {
             'profile_url': meta_data.get('profile_url', None),
             'profile_url_slug': meta_data.get('profile_url_slug', None),
@@ -199,7 +203,8 @@ class Linkdn_searchSpider(scrapy.Spider):
             'show_more_profile_urls': meta_data.get('show_more_profile_urls', None),
             'about': meta_data.get('about', None),
             'Causes': meta_data.get('Causes', None),
-            'show_more_profile': show_more_profile_get
+            'show_more_profile': show_more_profile_get,
+            'scrape_date': str(scrape_date)
         }
         yield LinkdnItem(**data)
 
