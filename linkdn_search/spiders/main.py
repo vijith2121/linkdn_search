@@ -50,7 +50,7 @@ class Linkdn_searchSpider(scrapy.Spider):
                 headers=headers,
                 callback=self.parse_profile
             )
-            return
+            # return
         # for item in response.json().get('included', []):
         #     print(item.get('navigationUrl'))
 
@@ -60,8 +60,13 @@ class Linkdn_searchSpider(scrapy.Spider):
 
     def parse_profile(self, response):
         profile_urls = response.json().get('included', [])
+        # urls_list = []
+        # print([i.get('navigationUrl') for i in profile_urls if i.get('navigationUrl') != None])
+        # for i in profile_urls:
+        #     urls_list.append(profile_url.get('navigationUrl')) 
         for profile_url in profile_urls:
-            if profile_url.get('navigationUrl'):
+            # print(profile_url.get('navigationUrl'))
+            if profile_url.get('navigationUrl') != None:
                 url = profile_url.get('navigationUrl')
                 profile_url_slug = url.split('/')[-1].split('?')[0]
                 # return
@@ -94,18 +99,6 @@ class Linkdn_searchSpider(scrapy.Spider):
                 yield scrapy.Request(
                     url=url, callback=self.parse_detail_page, cookies=cookies, headers=headers, meta=meta
                     )
-
-                # for profile_url_slug in profile_urls:
-                #     url = f'https://www.linkedin.com/in/{profile_url_slug}'
-                    # meta = {
-                    #     'profile_url': url,
-                    #     'profile_url_slug': profile_url_slug,
-                    #     'cookies': cookies,
-                    #     'headers': headers
-                    # }
-                    # yield scrapy.Request(
-                    #     url=url, callback=self.parse_detail_page, cookies=cookies, headers=headers, meta=meta
-                    #     )
 
     def parse_detail_page(self, response):
         meta_data = response.meta
