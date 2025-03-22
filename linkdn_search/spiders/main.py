@@ -41,10 +41,12 @@ class Linkdn_searchSpider(scrapy.Spider):
         }
         # name = 'HATEM ABDELWAHAB ELSAYED AWADALLA'
         script_directory = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(script_directory, "MOL_UAE_DATA2.csv")
+        file_path = os.path.join(script_directory, "split_part_1.csv")
         df = pd.read_csv(file_path)
         for item in df.to_dict('records'):
-            search_name = item.get('nameen', '')
+            search_name = item.get('Lead Name', '')
+            # print(search_name)
+            # return
             # search_name = 'HATEM ABDELWAHAB ELSAYED AWADALLA'
             headers['referer'] = f'https://www.linkedin.com/search/results/all/?keywords={search_name}&origin=TYPEAHEAD_ESCAPE_HATCH&sid=w2Q'
             yield scrapy.Request(
