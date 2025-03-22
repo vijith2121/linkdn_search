@@ -126,6 +126,29 @@ class Linkdn_searchSpider(scrapy.Spider):
         for item in profile_data:
             publicIdentifier = item.get('publicIdentifier')
             if publicIdentifier and publicIdentifier in response.url:
+                profile_root_image_slug = item.get(
+                    'profilePicture', {}
+                    ).get(
+                        'displayImageReferenceResolutionResult', {}
+                        ).get(
+                            'vectorImage', {}
+                            ).get(
+                                'rootUrl', ''
+                                )
+                profile_root_image_slug_size = item.get(
+                    'profilePicture', {}
+                    ).get(
+                        'displayImageReferenceResolutionResult', {}
+                        ).get(
+                            'vectorImage', {}
+                            ).get(
+                                'artifacts', []
+                            )
+                profile_root_image_slug_size = [
+                    i.get('fileIdentifyingUrlPathSegment', '') for i in profile_root_image_slug_size if '400_400' in i.get('fileIdentifyingUrlPathSegment', '')
+                ]
+                profile_display_image = f"{profile_root_image_slug}{''.join(profile_root_image_slug_size)}"
+
                 headline = item.get('headline', None)
                 first_name = item.get('firstName', None)
                 last_name = item.get('lastName', None)
@@ -135,6 +158,7 @@ class Linkdn_searchSpider(scrapy.Spider):
                 meta_data['headline'] = headline
                 meta_data['last_name'] = last_name
                 meta_data['publicIdentifier'] = publicIdentifier
+                meta_data['profile_display_image'] = profile_display_image
                 show_more_profile_urls = None
 
                 if item.get('entityUrn'):
@@ -216,7 +240,8 @@ class Linkdn_searchSpider(scrapy.Spider):
             'Causes': meta_data.get('Causes', None),
             'show_more_profile': show_more_profile_get,
             'scrape_date': str(scrape_date),
-            'profile_pictures_url': meta_data.get('profile_pictures_url', None)
+            'profile_pictures_url': meta_data.get('profile_pictures_url', None),
+            'profile_display_image': meta_data.get('profile_display_image', None).replace('https:', 'https://')
         }
         yield LinkdnItem(**data)
 
